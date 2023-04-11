@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Experimental.Rendering;
 
@@ -72,7 +73,8 @@ public class PaintCanvas : MonoBehaviour
 
         _pixelsHalfTextureX = textureSize / 2 / _pixelsPerUnit;
         _pixelsHalfTextureY = textureSize / 2 / _pixelsPerUnit;
-        
+
+        brushColor = UnityEngine.Random.ColorHSV();
         // Debug.Log(_texture.);
     }
 
@@ -102,8 +104,25 @@ public class PaintCanvas : MonoBehaviour
                 // _texture.SetPixel(rayX, rayY, Color.black);
                 // Graphics.Blit(_texture, _textureRender);
                 _texture.Apply();
+
+                GameController.Instance.networkController.SendPaintData(
+                    new NetworkController.PacketData()
+                    {
+                        x = rayX,
+                        y = rayY,
+                        diameter = brushDiameter,
+                        color = brushColor,
+                        brushType = brush,
+                    }
+                );
             }
         }
+    }
+
+    public void OtherDraw(NetworkController.PacketData data)
+    {
+        ChangePixels(data.x, data.y, data.diameter, data.color, data.brushType);
+        _texture.Apply();
     }
 
     private void ChangePixels(int centerX, int centerY, int diameter, Color color, Brush typeBrush)
@@ -133,6 +152,8 @@ public class PaintCanvas : MonoBehaviour
             }
         }
     }
+    
+
     
     public enum Brush {
         Square,

@@ -6,25 +6,39 @@ using UnityEngine;
 
 public class GameController : MonoBehaviour
 {
-    private NetworkController _networkController = new NetworkController();
+    public static GameController Instance { get; private set; } = null;
+    public PaintCanvas paintCanvas = null;
+    public NetworkController networkController = new NetworkController();
+
+    public void Awake()
+    {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(this);
+            return;
+        }
+
+        Instance = this;
+        DontDestroyOnLoad(this);
+    }
     
     // Start is called before the first frame update
     async void Start()
     {
-        await _networkController.Connect();
+        await networkController.Connect();
         
         await Task.Delay(1000);
-        await _networkController.SendTestMessage();
+        // await networkController.SendTestMessage();
     }
 
     // Update is called once per frame
-    void Update()
+    async void Update()
     {
-        _networkController.Update();
+        networkController.Update();
     }
 
     private async void OnApplicationQuit()
     {
-        await _networkController.CloseConnection();
+        await networkController.CloseConnection();
     }
 }

@@ -502,3 +502,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6535ae1a89d854616b203c1a4e01fe33, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  paintCanvas: {fileID: 187285028}
