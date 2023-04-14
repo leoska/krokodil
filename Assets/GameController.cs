@@ -3,12 +3,17 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
+using Networking;
 
 public class GameController : MonoBehaviour
 {
+    private float _timer = 0f;
+    
     public static GameController Instance { get; private set; } = null;
     public PaintCanvas paintCanvas = null;
     public NetworkController networkController = new NetworkController();
+    public string nickName = "player";
+    public int tickRate = 20;
 
     public void Awake()
     {
@@ -28,13 +33,22 @@ public class GameController : MonoBehaviour
         await networkController.Connect();
         
         await Task.Delay(1000);
-        // await networkController.SendTestMessage();
+        
+        _timer = 0f;
     }
 
     // Update is called once per frame
     async void Update()
     {
-        networkController.Update();
+        networkController.DispatchMessageQueue();
+        _timer += Time.deltaTime;
+
+        if (_timer >= 1f / tickRate)
+        {
+            networkController.Tick();
+            _timer = 0f;
+        }
+        
     }
 
     private async void OnApplicationQuit()

@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Experimental.Rendering;
+using Networking;
 
 public class PaintCanvas : MonoBehaviour
 {
@@ -105,8 +106,8 @@ public class PaintCanvas : MonoBehaviour
                 // Graphics.Blit(_texture, _textureRender);
                 _texture.Apply();
 
-                GameController.Instance.networkController.SendPaintData(
-                    new NetworkController.PacketData()
+                GameController.Instance.networkController.SendPaintEvent(
+                    new NetworkController.PaintData()
                     {
                         x = rayX,
                         y = rayY,
@@ -119,7 +120,7 @@ public class PaintCanvas : MonoBehaviour
         }
     }
 
-    public void OtherDraw(NetworkController.PacketData data)
+    public void OtherDraw(NetworkController.PaintData data)
     {
         ChangePixels(data.x, data.y, data.diameter, data.color, data.brushType);
         _texture.Apply();
