@@ -17,13 +17,15 @@ public class PaintCanvas : MonoBehaviour
     [Header("Texture Size")]
     public int textureSize = 256;
     [Header("Texture Filter Mode")]
-    public FilterMode filterMode = FilterMode.Point;
+    public FilterMode filterMode = FilterMode.Bilinear;
     [Header("Texture Wrap Mode")]
     public TextureWrapMode textureWrapMode = TextureWrapMode.Clamp;
     [Header("Camera as object")]
     public Camera camera = null;
     [Header("Amount of draw call per second")]
     public int drawCallPerSec = 60;
+
+    public Texture2D example;
 
     [Header("Brush type")] public Brush brush = Brush.Circle;
     [Header("Brush diameter")] public int brushDiameter = 15;
@@ -38,12 +40,13 @@ public class PaintCanvas : MonoBehaviour
             throw new Exception("_pixelsPerUnit cannot be 0!");
         
         // Initialize Texture2D
-        _texture = new Texture2D(textureSize, textureSize, TextureFormat.RGB565, false)
+        _texture = new Texture2D(textureSize, textureSize, TextureFormat.RGB24, false)
         {
             name = "paint",
             filterMode = filterMode,
             wrapMode = textureWrapMode
         };
+
 
         // Initialize 
         // _textureRender = new RenderTexture(textureSize, textureSize, 24, RenderTextureFormat.ARGB32)

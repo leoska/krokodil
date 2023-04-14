@@ -13,7 +13,7 @@ public class GameController : MonoBehaviour
     public PaintCanvas paintCanvas = null;
     public NetworkController networkController = new NetworkController();
     public string nickName = "player";
-    public int tickRate = 20;
+    public int tickRate = 33;
 
     public void Awake()
     {

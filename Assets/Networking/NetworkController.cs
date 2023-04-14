@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -10,7 +11,7 @@ namespace Networking
     {
         private WebSocket _websocket = null;
         private List<Packet> _buffer = new List<Packet>();
-        
+
         private async Task Send(Packet packet)
         {
             if (_websocket.State == WebSocketState.Open)
@@ -37,7 +38,7 @@ namespace Networking
                 var bytes = System.Text.Encoding.UTF8.GetBytes(json);
                 _websocket.Send(bytes);
             }
-            
+
             _buffer.Clear();
         }
 
@@ -135,6 +136,9 @@ namespace Networking
         [System.Serializable]
         public class PaintData
         {
+            [SerializeField] public Vector2 pointStart;
+            [SerializeField] public Vector2 pointEnd;
+            
             [SerializeField] public int x;
             [SerializeField] public int y;
             [SerializeField] public int diameter;
