@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Experimental.Rendering;
@@ -22,6 +23,8 @@ public class PaintCanvas : MonoBehaviour
     public TextureWrapMode textureWrapMode = TextureWrapMode.Clamp;
     [Header("Camera as object")]
     public Camera camera = null;
+
+    [Header("Default Texture color")] public Color defaultColor = Color.white;
     [Header("Amount of draw call per second")]
     public int drawCallPerSec = 60;
 
@@ -46,6 +49,18 @@ public class PaintCanvas : MonoBehaviour
             filterMode = filterMode,
             wrapMode = textureWrapMode
         };
+
+        Color[] pixels = Enumerable.Repeat(defaultColor, textureSize * textureSize).ToArray();
+        _texture.SetPixels(pixels);
+        _texture.Apply();
+
+        // Byte[] textureBytes = _texture.GetRawTextureData();
+        //
+        // Debug.Log(textureBytes[0]);
+        // Debug.Log(textureBytes[1]);
+        // Debug.Log(textureBytes[2]);
+        // Debug.Log(textureBytes[3]);
+
 
 
         // Initialize 
