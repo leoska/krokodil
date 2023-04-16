@@ -46,25 +46,24 @@ namespace Networking
             _buffer.Clear();
         }
 
-        private string _GetHostFromUri()
+        private string _GetHostFromUri(int port = 25565)
         {
-            var urlPath = Application.absoluteURL;
 #if !UNITY_WEBGL || UNITY_EDITOR
-            urlPath = "https://krokodilgame.ru/";
-#endif
+            // urlPath = "https://krokodilgame.ru/";
+            return $"ws://127.0.0.1:{port}";
+#else
+            var urlPath = Application.absoluteURL;
             Uri uri = new Uri(urlPath);
             return System.IO.Path.Join($"wss://{uri.Host}", "ws");
+#endif
         }
 
-        public async Task Connect()
+        private void _AddListeners()
         {
-            var url = _GetHostFromUri();
-            Debug.Log($"WebSocket: trying to connect [{url}]");
-            _websocket = new WebSocket(url);
-
             _websocket.OnOpen += () =>
             {
                 Debug.Log("Connection open!");
+                GameController.Instance.GoToGameRoom();
             };
             
             _websocket.OnMessage += (bytes) =>
@@ -76,9 +75,33 @@ namespace Networking
                 {
                     switch (packet.eventCode)
                     {
+                        // 
+                        // PaintData
                         case 20:
                             _paintDatas.Add(JsonUtility.FromJson<PaintData>(packet.data));
                             break;
+                        
+                        // Chat
+                        case 21:
+                            GameController.Instance.NewMessage(JsonUtility.FromJson<ChatData>(packet.data));
+                            break;
+                        
+                        // Chat
+                        case 22:
+                            GameController.Instance.SelectWord(JsonUtility.FromJson<SelectWordData>(packet.data));
+                            break;
+                        
+                        // Start
+                        case 30:
+                            GameController.Instance.SetSpectate();
+                            break;
+                        
+                        // Finish
+                        case 31:
+                            GameController.Instance.FinishThisGame(JsonUtility.FromJson<FinishData>(packet.data));
+                            break;
+                        
+                        // Winner
                     }
                 }
 
@@ -98,11 +121,32 @@ namespace Networking
             {
                 Debug.Log("Connection closed!");
             };
-            
-            // waiting for messages
+        }
+
+        public async Task Connect()
+        {
+            var url = _GetHostFromUri();
+            Debug.Log($"WebSocket: trying to connect [{url}]");
+            _websocket = new WebSocket(url);
+
+            _AddListeners();
+
+            // waiting for connection
             await _websocket.Connect();
         }
 
+        // public async Task Connect(int port)
+        // {
+        //     var url = _GetHostFromUri(port);
+        //     Debug.Log($"WebSocket: trying to connect [{url}]");
+        //     _websocket = new WebSocket(url);
+        //     
+        //     _AddListeners();
+        //     
+        //     // waiting for connection
+        //     await _websocket.Connect();
+        // }
+        
         public void Tick()
         {
             SendBuffer();
@@ -130,12 +174,21 @@ namespace Networking
         }
         
         #region Methods for send Data Packets
-        public async Task SendPaintEvent(PaintData paintData)
+        public void SendPaintEvent(PaintData paintData)
         {
             _buffer.Add(new Packet()
             {
                 eventCode = 20,
                 data = JsonUtility.ToJson(paintData),
+            });
+        }
+
+        public void SendMsgEvent(ChatData chatData)
+        {
+            _buffer.Add(new Packet()
+            {
+                eventCode = 21,
+                data = JsonUtility.ToJson(chatData),
             });
         }
         #endregion
@@ -188,7 +241,13 @@ namespace Networking
         [System.Serializable]
         public class SelectWordData
         {
-            [SerializeField] public int state = 0;
+            [SerializeField] public bool draw;
+            [SerializeField] public string word;
+        }
+
+        public class FinishData
+        {
+            [SerializeField] public bool winner;
         }
         #endregion
     }

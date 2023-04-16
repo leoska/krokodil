@@ -52,11 +52,6 @@ public class PaintCanvas : MonoBehaviour
             wrapMode = textureWrapMode
         };
 
-        // Set white color
-        Color[] pixels = Enumerable.Repeat(defaultColor, textureSizeWidth * textureSizeHeight).ToArray();
-        _texture.SetPixels(pixels);
-        _texture.Apply();
-
         // Byte[] textureBytes = _texture.GetRawTextureData();
         //
         // Debug.Log(textureBytes[0]);
@@ -64,7 +59,7 @@ public class PaintCanvas : MonoBehaviour
         // Debug.Log(textureBytes[2]);
         // Debug.Log(textureBytes[3]);
 
-
+        ClearCanvas();
 
         // Initialize 
         // _textureRender = new RenderTexture(textureSize, textureSize, 24, RenderTextureFormat.ARGB32)
@@ -96,13 +91,16 @@ public class PaintCanvas : MonoBehaviour
         _pixelsHalfTextureX = textureSizeWidth / 2 / _pixelsPerUnit;
         _pixelsHalfTextureY = textureSizeHeight / 2 / _pixelsPerUnit;
 
-        brushColor = UnityEngine.Random.ColorHSV();
+        // brushColor = UnityEngine.Random.ColorHSV();
         // Debug.Log(_texture.);
     }
 
     // Update is called once per frame
     private void Update()
     {
+        if (!GameController.Instance.drawUI.activeSelf)
+            return;
+        
         _timerDrawCall += Time.deltaTime;
 
         if (_timerDrawCall < 1f / drawCallPerSec)
@@ -139,6 +137,14 @@ public class PaintCanvas : MonoBehaviour
                 );
             }
         }
+    }
+
+    public void ClearCanvas()
+    {
+        // Set white color
+        Color[] pixels = Enumerable.Repeat(defaultColor, textureSizeWidth * textureSizeHeight).ToArray();
+        _texture.SetPixels(pixels);
+        _texture.Apply();
     }
 
     public void OtherDraw(WebSocketController.PaintData[] data)
@@ -181,9 +187,7 @@ public class PaintCanvas : MonoBehaviour
             }
         }
     }
-    
 
-    
     public enum Brush {
         Square,
         Circle,
