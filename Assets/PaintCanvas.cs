@@ -141,6 +141,9 @@ public class PaintCanvas : MonoBehaviour
 
     public void ClearCanvas()
     {
+        if (_texture == null)
+            return;
+        
         // Set white color
         Color[] pixels = Enumerable.Repeat(defaultColor, textureSizeWidth * textureSizeHeight).ToArray();
         _texture.SetPixels(pixels);
@@ -150,6 +153,9 @@ public class PaintCanvas : MonoBehaviour
     public void OtherDraw(WebSocketController.PaintData[] data)
     {
         if (data.Length < 1)
+            return;
+
+        if (_texture == null)
             return;
         
         foreach (var paintData in data)

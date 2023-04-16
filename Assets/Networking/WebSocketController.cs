@@ -50,8 +50,10 @@ namespace Networking
         {
 #if !UNITY_WEBGL || UNITY_EDITOR
             // urlPath = "https://krokodilgame.ru/";
-            return $"ws://127.0.0.1:{port}";
+            // return $"ws://127.0.0.1:{port}";
+            return $"ws://192.168.1.25:25565";
 #else
+            return $"ws://192.168.1.25:25565";
             var urlPath = Application.absoluteURL;
             Uri uri = new Uri(urlPath);
             return System.IO.Path.Join($"wss://{uri.Host}", "ws");
@@ -63,7 +65,7 @@ namespace Networking
             _websocket.OnOpen += () =>
             {
                 Debug.Log("Connection open!");
-                GameController.Instance.GoToGameRoom();
+                GameController.Instance.Invoke(nameof(GameController.GoToGameRoom), 0f);;
             };
             
             _websocket.OnMessage += (bytes) =>
@@ -191,6 +193,15 @@ namespace Networking
                 data = JsonUtility.ToJson(chatData),
             });
         }
+
+        public void SendConnected()
+        {
+            _buffer.Add(new Packet()
+            {
+                eventCode = 1,
+                data = "{}",
+            });
+        }
         #endregion
 
         #region Packets
@@ -245,6 +256,7 @@ namespace Networking
             [SerializeField] public string word;
         }
 
+        [System.Serializable]
         public class FinishData
         {
             [SerializeField] public bool winner;

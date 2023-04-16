@@ -11,6 +11,7 @@ using Random = System.Random;
 public class GameController : MonoBehaviour
 {
     private float _timer = 0f;
+    private TMP_InputField _chatInput = null;
     public string winWord = "";
 
     public static GameController Instance { get; private set; } = null;
@@ -72,6 +73,8 @@ public class GameController : MonoBehaviour
     {
         // await networkController.Connect();
         GoToMainMenu();
+
+        _chatInput = chatInput.GetComponent<TMP_InputField>();
         
         await Task.Delay(1000);
         
@@ -89,7 +92,11 @@ public class GameController : MonoBehaviour
             networkController.Tick();
             _timer = 0f;
         }
-        
+
+        if (Input.GetKeyUp(KeyCode.Return) && gameState == GameState.GameRoom && chatUI.activeSelf)
+        {
+            SendChatMessage();
+        }
     }
 
     public void GoToMainMenu()
@@ -107,15 +114,16 @@ public class GameController : MonoBehaviour
         gameState = GameState.MainMenu;
     }
 
-    public void FindGame()
-    {
-        TryToConnectGame();
-    }
+    // public async void FindGame()
+    // {
+    //     await TryToConnectGame();
+    // }
 
-    public async Task TryToConnectGame(int port = 25565)
+    public async void TryToConnectGame(int port = 25565)
     {
         // networkController.Connect();
         await networkController.Connect();
+        await Task.Delay(1000);
     }
 
     public void GoToGameRoom()
@@ -132,13 +140,15 @@ public class GameController : MonoBehaviour
         ResetGame();
 
         gameState = GameState.GameRoom;
+        
+         networkController.SendConnected();
     }
 
     public void ResetGame()
     {
-        foreach (GameObject msg in chatPanel.transform)
+        foreach (Transform msg in chatPanel.transform)
         {
-            Destroy(msg);
+            Destroy(msg.gameObject);
         }
 
         chatUI.SetActive(false);
@@ -149,8 +159,8 @@ public class GameController : MonoBehaviour
         winnerPanel.SetActive(false);
 
         winWord = "";
-
-        chatInput.GetComponent<TextMeshPro>().text = "";
+        
+        _chatInput.text = "";
     }
 
     public void SetProgress()
@@ -178,29 +188,40 @@ public class GameController : MonoBehaviour
         
         chatUI.SetActive(!packet.draw);
         drawUI.SetActive(packet.draw);
+        winnerPanel.SetActive(false);
+
+        if (packet.draw)
+        {
+            foreach (Transform selectWord in drawUI.transform)
+            {
+                selectWord.gameObject.GetComponent<TextMeshProUGUI>().text = packet.word;
+            }
+        }
+        
+        winWord = packet.word;
     }
 
     public void NewMessage(WebSocketController.ChatData packet)
     {
         GameObject newMsg = Instantiate(chatMessagePref, chatPanel.transform);
-        newMsg.GetComponent<TextMeshPro>().text = packet.chatString;
+        newMsg.GetComponent<TextMeshProUGUI>().text = packet.chatString;
     }
 
     public void SendChatMessage()
     {
-        string msg = chatInput.GetComponent<TextMeshPro>().text;
+        string msg = _chatInput.text;
 
         if (msg.Trim().Length < 1)
             return;
         
         networkController.SendMsgEvent(new WebSocketController.ChatData()
         {
-            chatString = msg,
+            chatString = msg.Trim(),
         });
         
-        chatInput.GetComponent<TextMeshPro>().text = "";
+        _chatInput.text = "";
 
-        if (msg == winWord)
+        if (String.Equals(msg.Trim(), winWord, StringComparison.InvariantCultureIgnoreCase))
         {
             winnerPanel.SetActive(true);
             
