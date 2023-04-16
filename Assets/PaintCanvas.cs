@@ -16,7 +16,9 @@ public class PaintCanvas : MonoBehaviour
     private float _pixelsHalfTextureY = 0f;
 
     [Header("Texture Size")]
-    public int textureSize = 256;
+    public int textureSizeWidth = 1200;
+
+    public int textureSizeHeight = 700;
     [Header("Texture Filter Mode")]
     public FilterMode filterMode = FilterMode.Bilinear;
     [Header("Texture Wrap Mode")]
@@ -24,7 +26,7 @@ public class PaintCanvas : MonoBehaviour
     [Header("Camera as object")]
     public Camera camera = null;
 
-    [Header("Default Texture color")] public Color defaultColor = Color.white;
+    [Header("Default Texture color")] public Color defaultColor = new Color(1f, 1f, 1f, 0.75f);
     [Header("Amount of draw call per second")]
     public int drawCallPerSec = 60;
 
@@ -43,14 +45,15 @@ public class PaintCanvas : MonoBehaviour
             throw new Exception("_pixelsPerUnit cannot be 0!");
         
         // Initialize Texture2D
-        _texture = new Texture2D(textureSize, textureSize, TextureFormat.RGB24, false)
+        _texture = new Texture2D(textureSizeWidth, textureSizeHeight, TextureFormat.RGBA32, false)
         {
             name = "paint",
             filterMode = filterMode,
             wrapMode = textureWrapMode
         };
 
-        Color[] pixels = Enumerable.Repeat(defaultColor, textureSize * textureSize).ToArray();
+        // Set white color
+        Color[] pixels = Enumerable.Repeat(defaultColor, textureSizeWidth * textureSizeHeight).ToArray();
         _texture.SetPixels(pixels);
         _texture.Apply();
 
@@ -72,7 +75,7 @@ public class PaintCanvas : MonoBehaviour
         // };
 
         // Initialize Sprite
-        var sprite = Sprite.Create(_texture, new Rect(0.0f, 0.0f, textureSize, textureSize),
+        var sprite = Sprite.Create(_texture, new Rect(0.0f, 0.0f, textureSizeWidth, textureSizeHeight),
             new Vector2(0.5f, 0.5f), _pixelsPerUnit);
 
         sprite.name = "paint";
@@ -88,10 +91,10 @@ public class PaintCanvas : MonoBehaviour
 
         // Calculate halfsize of Texture2D
         _collider = GetComponent<BoxCollider2D>();
-        _collider.size = new Vector2(textureSize / _pixelsPerUnit, textureSize / _pixelsPerUnit);
+        _collider.size = new Vector2(textureSizeWidth / _pixelsPerUnit, textureSizeHeight / _pixelsPerUnit);
 
-        _pixelsHalfTextureX = textureSize / 2 / _pixelsPerUnit;
-        _pixelsHalfTextureY = textureSize / 2 / _pixelsPerUnit;
+        _pixelsHalfTextureX = textureSizeWidth / 2 / _pixelsPerUnit;
+        _pixelsHalfTextureY = textureSizeHeight / 2 / _pixelsPerUnit;
 
         brushColor = UnityEngine.Random.ColorHSV();
         // Debug.Log(_texture.);
@@ -125,7 +128,7 @@ public class PaintCanvas : MonoBehaviour
                 _texture.Apply();
 
                 GameController.Instance.networkController.SendPaintEvent(
-                    new NetworkController.PaintData()
+                    new WebSocketController.PaintData()
                     {
                         x = rayX,
                         y = rayY,
@@ -138,9 +141,16 @@ public class PaintCanvas : MonoBehaviour
         }
     }
 
-    public void OtherDraw(NetworkController.PaintData data)
+    public void OtherDraw(WebSocketController.PaintData[] data)
     {
-        ChangePixels(data.x, data.y, data.diameter, data.color, data.brushType);
+        if (data.Length < 1)
+            return;
+        
+        foreach (var paintData in data)
+        {
+            ChangePixels(paintData.x, paintData.y, paintData.diameter, paintData.color, paintData.brushType);
+        }
+        
         _texture.Apply();
     }
 
@@ -154,7 +164,7 @@ public class PaintCanvas : MonoBehaviour
         {
             for (int x = centerX - radius; x < centerX + radius; x++)
             {
-                if (x < 0 || y < 0 || x >= textureSize || y >= textureSize) continue;
+                if (x < 0 || y < 0 || x >= textureSizeWidth || y >= textureSizeHeight) continue;
     
                 a = x - centerX;
                 b = y - centerY;
