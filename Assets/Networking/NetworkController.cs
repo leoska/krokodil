@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 using UnityEngine;
 
@@ -42,9 +43,19 @@ namespace Networking
             _buffer.Clear();
         }
 
+        private string _GetHostFromUri()
+        {
+            var urlPath = Application.absoluteURL;
+#if !UNITY_WEBGL || UNITY_EDITOR
+            urlPath = "https://krokodilgame.ru";
+#endif
+            Uri uri = new Uri(urlPath);
+            return System.IO.Path.Join($"wss://{uri.Host}", "ws");
+        }
+
         public async Task Connect()
         {
-            _websocket = new WebSocket("ws://192.168.1.25:25565");
+            _websocket = new WebSocket(_GetHostFromUri());
 
             _websocket.OnOpen += () =>
             {
