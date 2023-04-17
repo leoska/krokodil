@@ -53,7 +53,7 @@ namespace Networking
             // return $"ws://127.0.0.1:{port}";
             return $"ws://192.168.1.25:25565";
 #else
-            return $"ws://192.168.1.25:25565";
+            // return $"ws://192.168.1.25:25565";
             var urlPath = Application.absoluteURL;
             Uri uri = new Uri(urlPath);
             return System.IO.Path.Join($"wss://{uri.Host}", "ws");
