@@ -52,6 +52,7 @@ namespace Networking
             // urlPath = "https://krokodilgame.ru/";
             // return $"ws://127.0.0.1:{port}";
             return $"ws://192.168.1.25:25565";
+            // return $"ws://172.20.10.2:25565";
 #else
             return $"ws://192.168.1.25:25565";
             var urlPath = Application.absoluteURL;
