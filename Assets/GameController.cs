@@ -1,11 +1,8 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
 using Networking;
 using TMPro;
-using UnityEditor;
 using Random = System.Random;
 
 public class GameController : MonoBehaviour
@@ -32,8 +29,7 @@ public class GameController : MonoBehaviour
     public GameObject gameRoomUI = null;
     public GameObject chatUI = null;
     public GameObject drawUI = null;
-    public GameObject chatPanel = null;
-    public GameObject chatMessagePref = null;
+    public ChatController chatPanel = null;
     public GameObject chatInput = null;
     public GameObject winnerPanel = null;
     
@@ -114,11 +110,6 @@ public class GameController : MonoBehaviour
         gameState = GameState.MainMenu;
     }
 
-    // public async void FindGame()
-    // {
-    //     await TryToConnectGame();
-    // }
-
     public async void TryToConnectGame(int port = 25565)
     {
         // networkController.Connect();
@@ -146,10 +137,7 @@ public class GameController : MonoBehaviour
 
     public void ResetGame()
     {
-        foreach (Transform msg in chatPanel.transform)
-        {
-            Destroy(msg.gameObject);
-        }
+        chatPanel.Clear();
 
         chatUI.SetActive(false);
         drawUI.SetActive(false);
@@ -203,8 +191,7 @@ public class GameController : MonoBehaviour
 
     public void NewMessage(WebSocketController.ChatData packet)
     {
-        GameObject newMsg = Instantiate(chatMessagePref, chatPanel.transform);
-        newMsg.GetComponent<TextMeshProUGUI>().text = packet.chatString;
+        chatPanel.MessageAdd(packet.chatString);
     }
 
     public void SendChatMessage()
